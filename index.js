@@ -1,21 +1,19 @@
 
-exports.setContext = function ($el) {
-  $el.height = $el.clientHeight * 2
-  $el.width = $el.clientWidth * 2
+// constants / config
+var chartTypeCandleStick = 0
+var chartTypeLine = 1
 
-  ctx = $el.getContext('2d')
-  ctx.lineWidth = 1
-
-  var o = {
-    $el: $el,
-    ctx: ctx,
-    data: [],
-  }
-
-  return extend(o, proto)
+var defaultFont = {
+  font: '20px Arial',
+  fillStyle: 'Black',
+  strokeStyle: '#999',
 }
 
+var margin = 8
 
+
+
+// methods which are attached to each chart object / context
 var proto = {}
 
 proto.candleStick = function (data, color) {
@@ -32,14 +30,13 @@ proto.candleStick = function (data, color) {
     data: data,
     range: range,
     color: color,
-    type: 'candleStick',
+    type: chartTypeCandleStick,
   })
 
   return this
 }
 
-// return max + min values from each of the functions => different calculation
-// based on type
+
 proto.line = function (data, color) {
   var range = data.reduce( function (prev, el) {
     if (!prev.minDate || el.date < prev.minDate) prev.minDate = el.date
@@ -54,16 +51,13 @@ proto.line = function (data, color) {
     data: data,
     range: range,
     color: color,
-    type: 'line',
+    type: chartTypeLine,
   })
 
   return this
 }
 
 
-var margin = 8
-
-// do global max / min calc here
 proto.draw = function () {
   var ctx = this.ctx
   var $el = this.$el
@@ -83,7 +77,7 @@ proto.draw = function () {
 
   var lineCoordinateGrps = this.data
     .filter( function (grp) {
-      return grp.type == 'line'
+      return grp.type === chartTypeLine
     })
     .map( function (grp) {
       grp.coordinates = grp.data.map( function (el) {
@@ -116,7 +110,7 @@ proto.draw = function () {
 
   var stickCoordinateGrps = this.data
     .filter( function (grp) {
-      return grp.type == 'candleStick'
+      return grp.type === chartTypeCandleStick
     })
     .map( function (grp) {
       grp.coordinates = grp.data.map( function (el) {
@@ -145,9 +139,7 @@ proto.draw = function () {
 
 var drawXAxis = function (ctx, dateCoordinates, canvasRange) {
   ctx.beginPath()
-  ctx.font = '20px Arial'
-  ctx.fillStyle = 'Black'
-  ctx.strokeStyle = '#999'
+  extend(ctx, defaultFont)
 
   dateCoordinates.forEach( function (el, i) {
     if (i % 10 === 0) {
@@ -221,6 +213,7 @@ var drawCandleSticks = function (ctx, coordinateGrps) {
   })
 }
 
+
 var drawLines = function (ctx, coordinateGrps) {
   coordinateGrps.forEach( function (drawing, i) {
     ctx.beginPath()
@@ -262,5 +255,23 @@ var extend = function (o1, o2) {
     o1[key] = o2[key]
   })
   return o1
+}
+
+
+// publicly available method
+exports.setContext = function ($el) {
+  $el.height = $el.clientHeight * 2
+  $el.width = $el.clientWidth * 2
+
+  var ctx = $el.getContext('2d')
+  ctx.lineWidth = 1
+
+  var o = {
+    $el: $el,
+    ctx: ctx,
+    data: [],
+  }
+
+  return extend(o, proto)
 }
 

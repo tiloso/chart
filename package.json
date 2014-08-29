@@ -1,0 +1,5 @@
+{ "name" : "chart",
+  "version": "0.0.1",
+  "description": "Libary for drawing canvas-based line and candlestick charts",
+  "dependencies": {}
+}
